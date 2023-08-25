@@ -2,8 +2,10 @@ import React, {useEffect, useRef} from 'react';
 import './App.css';
 import { Howl } from 'howler';
 // import mp3 from './assets/mp3.mp3';
-// const mobilenet = require('@tensorflow-models/mobilenet');
-// const knnClassifier = require('@tensorflow-models/knn-classifier');
+import '@tensorflow/tfjs-backend-webgl';
+
+const mobilenet = require('@tensorflow-models/mobilenet');
+const knnClassifier = require('@tensorflow-models/knn-classifier');
 
 
 // var sound = new Howl({
@@ -12,13 +14,26 @@ import { Howl } from 'howler';
 
 // sound.play();
 
+const not_touch_label = 'not-touch';
+const touched_label = 'touched';
+const train_time = 50;
+
 function App() {
   const video = useRef();
+  const classifier = useRef();
+  const mobilenetModule = useRef();
 
   const init = async () => {
     console.log("init...");
     await setupCamera();
     console.log("setup camera ok");
+
+    classifier.current = knnClassifier.create();
+
+    mobilenetModule.current = await mobilenet.load();
+
+    console.log("done");
+    console.log("khong cham tay vao mat va bam train 1");
   }
 
   const setupCamera = () => {
@@ -46,6 +61,18 @@ function App() {
   //   }
   // };
 
+  const train = async label => {
+    for(let i = 0; i < train_time; i++){
+      console.log(`Progress ${parseInt((i+1) / train_time * 100)}%`);
+
+      await sleep(100);
+    }
+  }
+
+  const sleep = (ms = 0) => {
+    return new Promise(resolve => setTimeout(resolve,ms));
+  }
+
   useEffect(() => {
     init(); 
 
@@ -66,9 +93,9 @@ function App() {
       />  
 
       <div className="control">
-        <button className="btn"> Train 1</button>
-        <button className="btn"> Train 2</button>
-        <button className="btn"> Run</button>
+        <button className="btn" onClick={() => train(not_touch_label)}> Train 1</button>
+        <button className="btn" onClick={() => train(touched_label)}> Train 2</button>
+        <button className="btn" onClick={() => {}}> Run</button>
 
       </div>
     </div>
